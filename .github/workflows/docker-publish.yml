@@ -3,12 +3,6 @@ name: Docker
 on:
   workflow_dispatch:
   
-env:
-  # Use docker.io for Docker Hub
-  REGISTRY: docker.io
-  IMAGE_NAME: my-image-${{ github.run_id }}-${{ env.DATE }} # Use date and run ID for unique image names
-  DATE: ${{ steps.set-date.outputs.date }} # Set dynamically later
-
 jobs:
   build:
 
@@ -20,7 +14,7 @@ jobs:
 
       - name: Set current date
         id: set-date
-        run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
+        run: echo "DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Docker Setup QEMU
         uses: docker/setup-qemu-action@v1.2.0
@@ -36,17 +30,11 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract Docker metadata
-        id: meta
-        uses: docker/metadata-action@v3.6.2
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-
       - name: Build and push Docker image
-        id: build-and-push
         uses: docker/build-push-action@v2.10.0
         with:
           context: .
           platforms: linux/amd64,linux/amd64/v2,linux/amd64/v3,linux/arm64,linux/arm/v7
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            yydsxll/ms365_e5:latest
+            yydsxll/ms365_e5:${{ env.DATE }}
